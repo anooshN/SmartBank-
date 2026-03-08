@@ -1,3 +1,5 @@
+import java.nio.channels.NonWritableChannelException;
+
 public class BankAccount{
 	private int accountNumber;
 	private String accountType;
@@ -51,40 +53,60 @@ public class BankAccount{
 	
 	
 	public boolean deposit(double amount) {
+		try{
 		if(!isActive) {
-			System.out.println("x account is closed!");
-			return false;
+		
+//			System.out.println("x account is closed!");
+//			return false;
+			throw new AccountClosedEception(accountNumber, "deposit");
 		}
 		
 		if(amount <= 0) {
-			System.out.println("x deposit amount must be positive!");
-			return false;
+//			System.out.println("x deposit amount must be positive!");
+//			return false;
+			throw new InvalidAmountException(amount, "deposit");
 		}
-		
+		if(amount > 100000) {
+			throw new InvalidAmountException(amount,"deposit (exceeds maximum)");
+		}
 		balance += amount;
 		System.out.println(" Deposit successful!");
 		System.out.printf("amount deposited: $%,.2f%n",amount);
 		System.out.printf("new balance: $%, .2f%n", balance);
 		return true;
 		
+	}catch (AccountClosedEception e) {
+		// TODO: handle exception
+		e.displayErrorDetails();
+		return false;
+	}catch (InvalidAmountException e) {
+		// TODO: handle exception
+		e.displayErrorDetails();
+		return false;
+	}
 	}
 	
 	public boolean withdraw(double amount) {
+		
+		try {
 		if(!isActive) {
-			System.out.println("x account is closed!");
-			return false;
+//			System.out.println("x account is closed!");
+//			return false;
+			throw new AccountClosedEception(accountNumber, "withdrawl");
 		}
 		
 		if(amount <= 0) {
-			System.out.println("x withdrawl amount must be positive!");
-			return false;
+//			System.out.println("x withdrawl amount must be positive!");
+//			return false;
+			throw new InvalidAmountException(amount, "withdrawal");
 		}
 		
 		if(amount > balance) {
-			System.out.println("x insuffienct funds");
-			System.out.printf("current balance: $%,.2f%n ",balance);
-			System.out.printf("attempted withdraw : $%, .2f%n", amount);
-			return false;
+//			System.out.println("x insuffienct funds");
+//			System.out.printf("current balance: $%,.2f%n ",balance);
+//			System.out.printf("attempted withdraw : $%, .2f%n", amount);
+//			return false;
+			throw new InsufficientFundsException(amount, balance);
 		}
 		
 		balance -= amount;
@@ -92,28 +114,50 @@ public class BankAccount{
 		System.out.printf("amount withdraw: $%,.2f%n", amount);
 		System.out.printf("new balance: $%, .2f%n", balance);
 		return true;
+	}catch (AccountClosedEception e) {
+		// TODO: handle exception
+		return false;
+	}catch (InvalidAmountException e) {
+		// TODO: handle exception
+		return false;
+	}catch (InsufficientFundsException e) {
+		// TODO: handle exception
+		return false;
+	}
 	}
 	
 	public boolean transfer(BankAccount targetAccount, double amount) {
+		
+		try {
 		if(!isActive) {
-			System.out.println("x source accunt is closed!");
-			return false;
+//			System.out.println("x source accunt is closed!");
+//			return false;
+			throw new AccountClosedEception(accountNumber, "transfer (source)");
+		}
+		if(targetAccount == null) {
+			throw new InvalidAccountException(0);
 		}
 		
 		if(!targetAccount.isActive()) {
-			System.out.println("x target account is closed");
-			return false;
+//			System.out.println("x target account is closed");
+//			return false;
+			throw new AccountClosedEception(targetAccount.getAccountNumber(), "transfer (destination)");
 		}
 		
 		if(amount <= 0) {
-			System.out.println("x transfer amount must be positive!");
-			return false;
+//			System.out.println("x transfer amount must be positive!");
+//			return false;
+			throw new InvalidAmountException(amount, "tranfer");
 		}
 		
+		if(amount > 1000000) {
+			throw new InvalidAmountException(amount, "transfer (exceeds maximum)");
+		}
 		if(amount > balance) {
-			System.out.println("x insufficient funds for transfer!");
-			System.out.printf("current balance: $%, .2f%n",balance);
-			return false;
+//			System.out.println("x insufficient funds for transfer!");
+//			System.out.printf("current balance: $%, .2f%n",balance);
+//			return false;
+			throw new InsufficientFundsException(amount, balance);
 		}
 		
 		balance -=amount;
@@ -125,8 +169,29 @@ public class BankAccount{
 		System.out.printf("amount: $%, .2f%n", amount);
 		System.out.printf("your new balance: $%, .2f%n", balance);
 		return true;
+	}catch (AccountClosedEception e) {
+		// TODO: handle exception
+		e.displayErrorDetails();
+		return false;
+	}catch (InvalidAccountException e) {
+		// TODO: handle exception
+		e.displayErrorDetails();
+		return false;
+	}catch (InvalidAmountException e) {
+		e.displayErrorDetails();
+		return false;
+	}catch(InsufficientFundsException e) {
+		e.displayErrorDetails();
+		return false;
+	}
 	}
 	
+	
+	public void validateAccount() throws AccountClosedEception{
+		if(!isActive) {
+			throw new AccountClosedEception(accountNumber, "operation");
+		}
+	}
 	public double calculateInterest(double annualRate, int years) {
 		double interest = balance * annualRate * years;
 		return interest;

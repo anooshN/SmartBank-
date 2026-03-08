@@ -1,4 +1,6 @@
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class OOPBankingSystem{
@@ -97,7 +99,7 @@ public class OOPBankingSystem{
 	
 	private static void createNewAccount() {
 		System.out.println("\n========= create new account ========");
-		
+		try {
 		scanner.nextLine();
 		
 		System.out.println("enter customer name: ");
@@ -117,8 +119,15 @@ public class OOPBankingSystem{
 		double initialDeposit = getDoubleInput("Enter initial deposit amount: $");
 		
 		if(initialDeposit < 100) {
-			System.out.println("minimum initial deposit is $100!");
-			return;
+//			System.out.println("minimum initial deposit is $100!");
+//			return;
+			throw new InvalidAmountException(initialDeposit, "initial deposit (minimum $100)");
+		}
+		
+		if(initialDeposit > 10000) {
+//			System.out.println("minimum initial deposit is $100!");
+//			return;
+			throw new InvalidAmountException(initialDeposit, "initial deposit (exceeds maximum)");
 		}
 		
 		Customer customer = new Customer(name, customerId, email, phone);
@@ -130,7 +139,10 @@ public class OOPBankingSystem{
 		System.out.println("account number: "+account.getAccountNumber());
 		System.out.println("Customer Id: "+customerId);
 		System.out.printf("initial balance: $%,.2f%n", initialDeposit);
+		}catch(InvalidAmountException e) {
+			e.displayErrorDetails();
 		}
+	}
 	
 	private static void displayAllAccounts() {
 		System.out.println("\n======= all bank accounts========");
@@ -168,43 +180,54 @@ public class OOPBankingSystem{
 	
 	private static void depositMoney() {
 		System.out.println("\n ====== deposit money ==========");
-		
+		try {
 		int accountNumber = getIntInput("enter account number: ");
 		BankAccount account = findAccount(accountNumber);
 		
 		if(account == null) {
-			System.out.println("x account not found");
-			return ;
+//			System.out.println("x account not found");
+//			return ;
+			throw new InvalidAccountException(accountNumber);
 		}
 		
 		double amount = getDoubleInput("enter amount to deposit: $");
 		account.deposit(amount);
+		}catch (InvalidAccountException e) {
+			// TODO: handle exception
+			e.displayErrorDetails();
+		}
 	}
 	
 	private static void withdrawMoney() {
 		System.out.println("\n ====== withdraw money ======");
-		
+		try {
 		int accountNumber = getIntInput("enter account number:");
 		BankAccount account = findAccount(accountNumber);
 		
 		if(account == null) {
-			System.out.println("x account not found!");
-			return;
+//			System.out.println("x account not found!");
+//			return;
+			throw new InvalidAccountException(accountNumber);
 		}
 		
 		double amount = getDoubleInput("enter amount to withdraw: $");
 		account.withdraw(amount);
+		}catch (InvalidAccountException e) {
+			// TODO: handle exception
+			e.displayErrorDetails();
+		}
 	}
 	
 	private static void transferMoney() {
 		System.out.println("\n======= transfer money ==========");
-		
+		try {
 		int fromAccountNumber = getIntInput("enter source account number:");
 		BankAccount fromAccount = findAccount(fromAccountNumber);
 		
 		if(fromAccount == null) {
-			System.out.println("x source account not found!");
-			return;
+//			System.out.println("x source account not found!");
+//			return;
+			throw new InvalidAccountException(fromAccountNumber);
 			
 		}
 		
@@ -212,8 +235,9 @@ public class OOPBankingSystem{
 		BankAccount toAccount = findAccount(toAccountNumber);
 		
 		if(toAccount == null) {
-			System.out.println("x destination account not found :");
-			return;
+//			System.out.println("x destination account not found :");
+//			return;
+			throw new InvalidAccountException(toAccountNumber);
 		}
 		
 		if(fromAccountNumber == toAccountNumber) {
@@ -223,19 +247,27 @@ public class OOPBankingSystem{
 		
 		double amount = getDoubleInput("enter amount to transfer: $");
 		fromAccount.transfer(toAccount,amount);
+		}catch(InvalidAccountException e) {
+			e.displayErrorDetails();
+		}
 	}
 	
 	private static void checkAccountDetails() {
 		System.out.println("\n=========== account details =======");
-		
+		try {
 		int accountNumber = getIntInput("enter account number:");
 		BankAccount account = findAccount(accountNumber);
 		
 		if(account == null) {
-			System.out.println("x account not found!");
-			return;
+//			System.out.println("x account not found!");
+//			return;
+			throw new InvalidAccountException(accountNumber);
 		}
 		account.displayAccountInfo();
+		}catch (InvalidAccountException e) {
+			// TODO: handle exception
+			e.displayErrorDetails();
+		}
 	}
 	
 	
@@ -324,22 +356,46 @@ public class OOPBankingSystem{
 	}
 	
 	private static int getIntInput(String prompt) {
-		System.out.println(prompt);
-		while(!scanner.hasNextInt()) {
-			System.out.println("x invalid input! please enter a number!");
-			scanner.next();
-			
+//		System.out.println(prompt);
+//		while(!scanner.hasNextInt()) {
+//			System.out.println("x invalid input! please enter a number!");
+//			scanner.next();
+//			
+//		}
+//		return scanner.nextInt();
+		while(true) {
+			try {
+				System.out.println(prompt);
+				int value = scanner.nextInt();
+				scanner.nextLine();
+				return value;
+			}catch (InputMismatchException e) {
+				// TODO: handle exception
+				System.out.println("x invalid input! please enter a valid number.");
+				scanner.nextLine();
+			}
 		}
-		return scanner.nextInt();
 	}
 	
 	private static double getDoubleInput(String prompt) {
-		System.out.println(prompt);
-		while(!scanner.hasNextDouble()) {
-			System.out.println("x invalid input! please enter a number: ");
-			scanner.next();
+//		System.out.println(prompt);
+//		while(!scanner.hasNextDouble()) {
+//			System.out.println("x invalid input! please enter a number: ");
+//			scanner.next();
+//		}
+//		return scanner.nextDouble();
+		
+		while(true) {
+			try {
+				System.out.println(prompt);
+				double value = scanner.nextDouble();
+				scanner.nextLine();
+				return value;
+			}catch(InputMismatchException e) {
+				System.out.println("x invalid input! please enter a valid number.");
+				scanner.nextLine();
+			}
 		}
-		return scanner.nextDouble();
 	}
 	
 	
