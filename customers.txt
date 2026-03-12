@@ -1,0 +1,2 @@
+1001,alice johnson,alice@smartbank.com,555-0001
+1002,bob smith,bob@smartbank.com,555-0002
